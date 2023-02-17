@@ -1,0 +1,11 @@
+namespace Balta_EntityFramework
+{
+    public static class AppConfig
+    {
+        public static string CONNECTION_SQLSERVER = @"
+        Server=localhost,1433;
+        Database=FluentBlog;
+        User ID=sa;
+        Password=********";
+    }
+}
