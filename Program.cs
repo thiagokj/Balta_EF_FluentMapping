@@ -9,6 +9,45 @@ using (var context = new BlogDataContext())
 
 }
 
+void ExemploCriaUmNovoUsuarioRecuperaOUsuarioEGeraUmPost(BlogDataContext context)
+{
+    // var user = new User
+    // {
+    //     Name = "João Felix",
+    //     Slug = "jao-felix",
+    //     Email = "jao@jaonet.com",
+    //     Bio = "Redator tecnico",
+    //     Image = "https://meu-endereco",
+    //     PasswordHash = "8989645"
+    // };
+
+    // context.Users.Add(user);
+    // context.SaveChanges();
+
+    var user = context.Users.FirstOrDefault();
+
+    var category = new Category
+    {
+        Name = "QA",
+        Slug = "qa"
+    };
+
+    var post = new Post
+    {
+        Author = user,
+        Category = category,
+        Body = "<p>Novas regras de abastecimento</p>",
+        Slug = "novas-regras-abastecimento",
+        Summary = "Veja o impacto das novas regras",
+        Title = "Começando com EF Core",
+        CreateDate = DateTime.Now,
+        // LastUpdateDate = DateTime.Now
+    };
+
+    context.Posts.Add(post);
+    context.SaveChanges();
+}
+
 void ExemploDeUpdateEmUmSubConjunto(BlogDataContext context)
 {
     // Exemplo de Update

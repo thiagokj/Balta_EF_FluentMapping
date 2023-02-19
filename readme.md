@@ -38,3 +38,13 @@ public class CategoryMap : IEntityTypeConfiguration<Category>
         }
     }
 ```
+
+### Migrations
+
+As migrações são um recurso do EF que gerenciam a criação e alteração de esquemas no banco de dados. Habilite o recurso com o comando no terminal e depois execute **dotnet ef**:
+
+```shell
+dotnet tool install --global dotnet-ef
+```
+
+Execute um **dotnet clean** e _dotnet build_, para compilar a aplicação e verificar se não há erros
