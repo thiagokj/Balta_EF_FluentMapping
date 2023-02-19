@@ -23,7 +23,7 @@ namespace Balta_EF_Mapping.Data.Mappings
             // Recomendado atribuir via aplicação.
             // .HasDefaultValue(DateTime.Now.ToUniversalTime()); 
 
-            builder.HasIndex(x => x.Slug, "IX_User_Slug")
+            builder.HasIndex(x => x.Slug, "IX_Post_Slug")
                 .IsUnique();
 
             // Relacionamentos

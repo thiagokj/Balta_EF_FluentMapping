@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Balta_EntityFramework.Models
 {
     public class Post
@@ -15,7 +12,6 @@ namespace Balta_EntityFramework.Models
         public DateTime LastUpdateDate { get; set; }
         public Category Category { get; set; }
         public User Author { get; set; }
-
         public List<Tag> Tags { get; set; }
     }
 }

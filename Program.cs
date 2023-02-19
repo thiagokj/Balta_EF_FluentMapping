@@ -6,7 +6,7 @@ Console.Clear();
 
 using (var context = new BlogDataContext())
 {
-
+    ExemploDeQueryPuraNoBanco(context);
 }
 
 void ExemploCriaUmNovoUsuarioRecuperaOUsuarioEGeraUmPost(BlogDataContext context)
@@ -72,7 +72,8 @@ void ExemploDeUpdateEmUmSubConjunto(BlogDataContext context)
 void ExemploDeConsultaComInclude(BlogDataContext context)
 {
     // Include | Representa os Joins no banco e associa as tabelas
-    // ThenInclude | Faz um SUBSELECT na tabela informada no Include.
+    // ThenInclude | Faz um SUBSELECT na tabela informada no Include e deve
+    // ser usado com moderação, pois a query pode ficar mais pesada.
     // É util para retornar itens dentro de sublistas. 
     var posts = context
     .Posts
@@ -236,5 +237,120 @@ void ExemploDiferencaEntreFirstSingle()
         //     .AsNoTracking()
         //     .SingleOrDefault(x => x.Id == 6);
         // Console.WriteLine(tag?.Name);
+    }
+
+}
+
+// Dicas iniciais sobre performance
+async Task ExemploDeProcessamentoParaleloComAsyncAwaitAsync(BlogDataContext context)
+{
+    // Task | Uma tarefa pode ser vista como um método que será executado em paralelo.
+    // Podemos criar várias tarefas paralelas para lidar com processamentos que demoram
+    // mais tempo, permitindo que a aplicação não pare enquanto aguarda o retorno.
+    var post = await context.Posts.FirstOrDefaultAsync();
+    var users = await context.Users.ToListAsync();
+    var posts = await GetPosts(context);
+
+    // Nos exemplos acima, a aplicação vai criar tarefas separadas e processar as
+    // solicitações. O Console.WriteLine será executado, ficando independente desses
+    // processamentos que podem levar mais tempo para ocorrer.
+
+    Console.Write("Teste");
+}
+
+async Task<IEnumerable<Post>> GetPosts(BlogDataContext context)
+{
+    return await context.Posts.ToListAsync();
+}
+
+void ExemploDeCarregamentoComLazyEager(BlogDataContext context)
+{
+    // Lazy Loading | Carregamento preguiçoso.
+    // Esse tipo de instrução acaba gerando um processamento adicional se o retorno 
+    // de um objeto não for bem especificado.
+
+    // Aqui seria feito um SELECT * no banco, caso a propriedade estivesse definida
+    // como virtual, permitindo sobreesrita. Ex public virtual List<Tag> Tags...
+    var lazyPosts = context.Posts.ToList();
+    foreach (var post in lazyPosts)
+    {
+        // E aqui seria feito SELECT adicional no banco para fazer o JOIN.
+        foreach (var tag in post.Tags) { }
+    }
+
+    // Eager Loading | Carregamento antecipado.
+    // Esse é o tipo de instrução padrão do EF gerando um retorno antecipado
+    // para o objeto.
+
+    // Executada consulta apenas uma vez com os parametros definidos, mais otimizada,
+    // retornando JOIN e filtro em um unico processamento no banco.
+    var posts = context.Posts.Include(x => x.Tags).Select(x => x.Id).ToList();
+    foreach (var post in lazyPosts)
+    {
+        foreach (var tag in post.Tags) { }
+    }
+}
+
+List<Post> ExemploComPaginacao(BlogDataContext context, int skip = 0, int take = 25)
+{
+    // Caso houvesse 1Mi de registros, tudo seria retornado no objeto, podendo
+    // travar a aplicação. É muita informação sendo carregada na memória.
+    // var UmMilhaoDePostagens = context
+    //     .Posts
+    //     .ToList();
+    // return UmMilhaoDePostagens;
+
+    // Para evitar isso, podemos utilizar a paginação de dados com os optional
+    // parameters Skip e Take. Ex: retorna os primeiros 25 registros.
+    var posts = context
+        .Posts
+        .AsNoTracking()
+        .Skip(skip)
+        .Take(take)
+        .ToList();
+
+    return posts;
+}
+
+void ExemploDeRetornoComPaginacao(BlogDataContext context)
+{
+    // retorna os primeiros 25 registros
+    var pagina1 = ExemploComPaginacao(context, 0, 25);
+
+    // pula 25 registros e retorna os próximos 25 registros
+    var pagina2 = ExemploComPaginacao(context, 25, 25);
+
+    // pula 50 registros e retorna os próximos 25 registros
+    var pagina3 = ExemploComPaginacao(context, 50, 25);
+
+    // pula 75 registros e retorna os próximos 25 registros
+    var pagina4 = ExemploComPaginacao(context, 75, 25);
+}
+
+void ExemploDeQueryPuraNoBanco(BlogDataContext context)
+{
+    // Crie uma Model para representar os campos da consulta
+    // Crie um DbSet com o tipo da Model
+    // Crie uma entidade no modelBuilder para fazer a consulta no banco
+    // Trecho do Mapping BlogDataContext
+    //...
+    // modelBuilder.Entity<PostWithCategoryCount>(x =>
+    // {
+    //     x.ToSqlQuery(@"
+    //         SELECT
+    //             [Title] AS [Name],
+    //             COUNT([Id]) AS [Count]
+    //         FROM 
+    //             [Post]
+    //         GROUP BY
+    //             [Title]").HasNoKey();
+    // });
+    //...
+
+    var qtyPosts = context.PostWithCategoryCount.AsNoTracking().ToList();
+
+    foreach (var item in qtyPosts)
+    {
+        Console.WriteLine($"Qtd itens: {item.Count}");
     }
 }

@@ -26,6 +26,7 @@ namespace Balta_EF_Mapping.Data.Mappings
             builder.Property(x => x.Email);
             builder.Property(x => x.Image);
             builder.Property(x => x.PasswordHash);
+            builder.Property(x => x.GitHub);
 
             builder.Property(x => x.Slug)
                 .IsRequired()
